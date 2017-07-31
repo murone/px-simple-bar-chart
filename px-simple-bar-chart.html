@@ -473,18 +473,34 @@ The following theme would be incorrect because it has a gap. All series in your 
         },
         _drawBars: function() {
             var offsets = [], // accumulate y for each value stack
+                xOffsets = [],
                 that = this;
+            var widthForDay = this.widthValue/7;
+            var widhtForColumn = widthForDay/4;
+            var startXForDay = 0
             this.chartData.forEach(function(series, i) {
                 var color = that._getColor(i);
+                if (i != 0) {
+                  startXForDay += widhtForColumn
+                }
                 series.forEach(function(value, j) {
                     // for each series draw a bar representing each value
-                    var barHeight = Math.floor(that.yScale(value));
-                    var typeofElement = typeof offsets[j];
-                    var isFirst = typeofElement.toString() === 'undefined';
-                    offsets[j] = isFirst ? barHeight : offsets[j] + barHeight;
-                    var y = that.heightValue - offsets[j] - 1;
-                    var x = (that.gridWidth*2) * j;
-                    that._drawBar(x, y, that.gridWidth, barHeight, i, color);
+                    // var barHeight = Math.floor(that.yScale(value));
+                    // var typeofElement = typeof offsets[j];
+                    // var isFirst = typeofElement.toString() === 'undefined';
+                    // offsets[j] = isFirst ? barHeight : offsets[j] + barHeight;
+                    // var y = that.heightValue - offsets[j] - 1;
+                    // var x = (that.gridWidth*2) * j;
+                    // that._drawBar(x, y, that.gridWidth, barHeight, i, color);
+                    var barHeight = (that.heightValue * .88) * (value/100);
+                    if (j == 0) {
+                      var x = startXForDay;
+                    } else {
+                      var x = startXForDay + widthForDay *j;
+                    }
+                    var y = that.heightValue - barHeight- 1;
+
+                    that._drawBar(x, y, widhtForColumn-5, barHeight, i, color);
                 });
             });
             this.svg
