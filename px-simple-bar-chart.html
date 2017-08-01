@@ -139,6 +139,18 @@ The following theme would be incorrect because it has a gap. All series in your 
                     return defaultChartData;
                 }
             },
+
+            weekData: {
+              type: Array,
+              observer: '_drawChart',
+              value: function() {
+                  return [];
+              }
+            },
+
+            average: {
+              type: String
+            },
             /**
              * This attribute defines the custom text labels for your bar chart
              * legend. Pass in the values as an array of strings.
@@ -473,11 +485,12 @@ The following theme would be incorrect because it has a gap. All series in your 
         },
         _drawBars: function() {
             var offsets = [], // accumulate y for each value stack
-                xOffsets = [],
                 that = this;
-            var widthForDay = this.widthValue/7;
+            var xOffset = 20
+            var widthForDay = (this.widthValue - xOffset)/7;
             var widhtForColumn = widthForDay/4;
-            var startXForDay = 0
+            var startXForDay = widhtForColumn + xOffset
+            var weekDates = this.weekData;
             this.chartData.forEach(function(series, i) {
                 var color = that._getColor(i);
                 if (i != 0) {
@@ -492,27 +505,151 @@ The following theme would be incorrect because it has a gap. All series in your 
                     // var y = that.heightValue - offsets[j] - 1;
                     // var x = (that.gridWidth*2) * j;
                     // that._drawBar(x, y, that.gridWidth, barHeight, i, color);
-                    var barHeight = (that.heightValue * .88) * (value/100);
+
+                    var barHeight = (that.heightValue * .80) * (value/100);
                     if (j == 0) {
                       var x = startXForDay;
                     } else {
                       var x = startXForDay + widthForDay *j;
                     }
-                    var y = that.heightValue - barHeight- 1;
+                    if (i == 0) {
+                      that._drawXaxis(x, widhtForColumn-5, weekDates[j].date);
+                    }
+                    var y = ((that.heightValue * .9) - barHeight-1);
 
-                    that._drawBar(x, y, widhtForColumn-5, barHeight, i, color);
+                    that._drawBar(x, y, widhtForColumn-5, barHeight, color);
+                    that._drawValue(x, y, widhtForColumn-5, value);
                 });
             });
+            var averageHeight = (that.heightValue * .80) * (this.average/100);
+            var yHeight = ((that.heightValue * .9) - averageHeight-1);
+
+
             this.svg
                 .append("line")
                 .attr("class", "px-simple-bar-chart bar-chart-bottom-line")
-                .attr("x1", 0)
-                .attr("y1", this.heightValue)
+                .attr("x1", widhtForColumn)
+                .attr("y1", this.heightValue * .9)
                 .attr("x2", this.chartWidth)
-                .attr("y2", this.heightValue);
+                .attr("y2", this.heightValue * .9);
+
+                this.svg
+                .append("line")
+                .attr("class", "px-simple-bar-chart bar-chart-bottom-line")
+                .attr("x1", 0)
+                .attr("y1", yHeight)
+                .attr("x2", this.chartWidth)
+                .attr("y2", yHeight)
+                .attr("stroke-dasharray", "20, 20");
+
+                this.svg
+                .append("text")
+                .attr("class", "x-axis")
+                .attr("x", this.chartWidth - widhtForColumn * 4)
+                .attr("y", yHeight - 20)
+                .attr("width", widhtForColumn- 10)
+                .text(this.average + '%');
+
+            this.svg
+                .append("line")
+                .attr("class", "px-simple-bar-chart bar-chart-bottom-line")
+                .attr("x1", widhtForColumn)
+                .attr("y1", this.heightValue * .9)
+                .attr("x2", this.chartWidth)
+                .attr("y2", this.heightValue * .9);
+
+                this.svg
+                .append("text")
+                .attr("class", "x-axis")
+                .attr("x", 0)
+                .attr("y", this.heightValue * .9)
+                .attr("width", widhtForColumn- 10)
+                .text('0');
+
+                this.svg
+                .append("text")
+                .attr("class", "x-axis")
+                .attr("x", 0)
+                .attr("y", this.heightValue * .82)
+                .attr("width", widhtForColumn- 10)
+                .text('10');
+
+                this.svg
+                .append("text")
+                .attr("class", "x-axis")
+                .attr("x", 0)
+                .attr("y", this.heightValue* .74)
+                .attr("width", widhtForColumn- 10)
+                .text('20');
+
+                this.svg
+                .append("text")
+                .attr("class", "x-axis")
+                .attr("x", 0)
+                .attr("y", this.heightValue* .66)
+                .attr("width", widhtForColumn- 10)
+                .text('30');
+
+                this.svg
+                .append("text")
+                .attr("class", "x-axis")
+                .attr("x", 0)
+                .attr("y", this.heightValue* .58)
+                .attr("width", widhtForColumn- 10)
+                .text('40');
+
+                this.svg
+                .append("text")
+                .attr("class", "x-axis")
+                .attr("x", 0)
+                .attr("y", this.heightValue* .50)
+                .attr("width", widhtForColumn- 10)
+                .text('50');
+
+                this.svg
+                .append("text")
+                .attr("class", "x-axis")
+                .attr("x", 0)
+                .attr("y", this.heightValue* .42)
+                .attr("width", widhtForColumn- 10)
+                .text('60');
+
+                this.svg
+                .append("text")
+                .attr("class", "x-axis")
+                .attr("x", 0)
+                .attr("y", this.heightValue* .34)
+                .attr("width", widhtForColumn- 10)
+                .text('70');
+
+                this.svg
+                .append("text")
+                .attr("class", "x-axis")
+                .attr("x", 0)
+                .attr("y", this.heightValue* .26)
+                .attr("width", widhtForColumn- 10)
+                .text('80');
+
+                this.svg
+                .append("text")
+                .attr("class", "x-axis")
+                .attr("x", 0)
+                .attr("y", this.heightValue* .18)
+                .attr("width", widhtForColumn)
+                .text('90');
         },
 
-        _drawBar: function(x, y, width, height, i, color) {
+        _drawXaxis: function(x, width, value) {
+          this.svg
+                  .append("text")
+                  .attr("class", "x-axis")
+                  .attr("x", x)
+                  .attr("y", this.heightValue)
+                  .attr("width", width)
+                  .text(value);
+        },
+
+        _drawBar: function(x, y, width, height, color) {
             this.svg
                 .append("rect")
                 .attr("class", "bar")
@@ -521,6 +658,16 @@ The following theme would be incorrect because it has a gap. All series in your 
                 .attr("width", width)
                 .attr("height", height)
                 .attr("fill", color);
+        },
+
+        _drawValue: function(x, y, width, value) {
+          this.svg
+            .append("text")
+            .attr("class", "title")
+            .attr("x", x)
+            .attr("y", y - 5)
+            .attr("width", width)
+            .text(Math.floor(value)+ '  ');
         }
 
     });
