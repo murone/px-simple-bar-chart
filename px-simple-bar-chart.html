@@ -486,10 +486,11 @@ The following theme would be incorrect because it has a gap. All series in your 
         _drawBars: function() {
             var offsets = [], // accumulate y for each value stack
                 that = this;
-            var xOffset = 20
-            var widthForDay = (this.widthValue - xOffset)/7;
+            var xOffsetLeft = 20
+            var xOffsetRight = 40
+            var widthForDay = (this.widthValue - xOffsetLeft - xOffsetRight)/7;
             var widhtForColumn = widthForDay/4;
-            var startXForDay = widhtForColumn + xOffset
+            var startXForDay = widhtForColumn + xOffsetLeft
             var weekDates = this.weekData;
             this.chartData.forEach(function(series, i) {
                 var color = that._getColor(i);
@@ -513,12 +514,12 @@ The following theme would be incorrect because it has a gap. All series in your 
                       var x = startXForDay + widthForDay *j;
                     }
                     if (i == 0) {
-                      that._drawXaxis(x, widhtForColumn-5, weekDates[j].date);
+                      that._drawXaxis(x + widhtForColumn + 5, widhtForColumn-5, weekDates[j].date);
                     }
                     var y = ((that.heightValue * .9) - barHeight-1);
 
                     that._drawBar(x, y, widhtForColumn-5, barHeight, color);
-                    that._drawValue(x, y, widhtForColumn-5, value);
+                    that._drawValue(x + (widhtForColumn/2) - 10 , y, widhtForColumn-5, value);
                 });
             });
             var averageHeight = (that.heightValue * .80) * (this.average/100);
@@ -530,7 +531,7 @@ The following theme would be incorrect because it has a gap. All series in your 
                 .attr("class", "px-simple-bar-chart bar-chart-bottom-line")
                 .attr("x1", widhtForColumn)
                 .attr("y1", this.heightValue * .9)
-                .attr("x2", this.chartWidth)
+                .attr("x2", this.chartWidth + 40)
                 .attr("y2", this.heightValue * .9);
 
                 this.svg
@@ -545,18 +546,10 @@ The following theme would be incorrect because it has a gap. All series in your 
                 this.svg
                 .append("text")
                 .attr("class", "x-axis")
-                .attr("x", this.chartWidth - widhtForColumn * 4)
-                .attr("y", yHeight - 20)
+                .attr("x", this.chartWidth - 30)
+                .attr("y", yHeight - 15)
                 .attr("width", widhtForColumn- 10)
                 .text(this.average + '%');
-
-            this.svg
-                .append("line")
-                .attr("class", "px-simple-bar-chart bar-chart-bottom-line")
-                .attr("x1", widhtForColumn)
-                .attr("y1", this.heightValue * .9)
-                .attr("x2", this.chartWidth)
-                .attr("y2", this.heightValue * .9);
 
                 this.svg
                 .append("text")
@@ -644,7 +637,7 @@ The following theme would be incorrect because it has a gap. All series in your 
                   .append("text")
                   .attr("class", "x-axis")
                   .attr("x", x)
-                  .attr("y", this.heightValue)
+                  .attr("y", this.heightValue - 5)
                   .attr("width", width)
                   .text(value);
         },
