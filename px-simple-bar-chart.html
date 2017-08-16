@@ -140,7 +140,7 @@ The following theme would be incorrect because it has a gap. All series in your 
                 }
             },
 
-            weekData: {
+            xAxisLabels: {
               type: Array,
               observer: '_drawChart',
               value: function() {
@@ -150,6 +150,19 @@ The following theme would be incorrect because it has a gap. All series in your 
 
             average: {
               type: String
+            },
+
+            sidebyside: {
+              type: Boolean,
+              value: false
+            },
+
+            yAxisLegend: {
+                type: Array,
+                observer: '_drawChart',
+                value: function() {
+                    return [];
+                }
             },
             /**
              * This attribute defines the custom text labels for your bar chart
@@ -486,150 +499,131 @@ The following theme would be incorrect because it has a gap. All series in your 
         _drawBars: function() {
             var offsets = [], // accumulate y for each value stack
                 that = this;
-            var xOffsetLeft = 20
-            var xOffsetRight = 40
-            var widthForDay = (this.widthValue - xOffsetLeft - xOffsetRight)/7;
-            var widhtForColumn = widthForDay/4;
-            var startXForDay = widhtForColumn + xOffsetLeft
-            var weekDates = this.weekData;
-            this.chartData.forEach(function(series, i) {
-                var color = that._getColor(i);
-                if (i != 0) {
-                  startXForDay += widhtForColumn
-                }
-                series.forEach(function(value, j) {
-                    // for each series draw a bar representing each value
-                    // var barHeight = Math.floor(that.yScale(value));
-                    // var typeofElement = typeof offsets[j];
-                    // var isFirst = typeofElement.toString() === 'undefined';
-                    // offsets[j] = isFirst ? barHeight : offsets[j] + barHeight;
-                    // var y = that.heightValue - offsets[j] - 1;
-                    // var x = (that.gridWidth*2) * j;
-                    // that._drawBar(x, y, that.gridWidth, barHeight, i, color);
 
-                    var barHeight = (that.heightValue * .80) * (value/100);
-                    if (j == 0) {
-                      var x = startXForDay;
-                    } else {
-                      var x = startXForDay + widthForDay *j;
-                    }
-                    if (i == 0) {
-                      that._drawXaxis(x + widhtForColumn + 5, widhtForColumn-5, weekDates[j].date);
-                    }
-                    var y = ((that.heightValue * .9) - barHeight-1);
+    						if(this.sidebyside) {
+    	            let xOffsetLeft = 20
+    	            let xOffsetRight = 40
+    							// Divide the x axis drawable area by the number of series to be drawn
+    	            let widthPerSerie = (this.widthValue - xOffsetLeft - xOffsetRight)/this.chartData[0].length;
+    							// Set the width of the bar plus one more the spacing
+    	            let barWidth = widthPerSerie/(this.chartData.length+1);
+    	            let xCoordinate = 40;
+    	            let xlabels = this.xAxisLabels;
+    	            this.chartData.forEach(function(series, i) {
+    	                var color = that._getColor(i);
+    	                if (i != 0) {
+    	                  xCoordinate += barWidth
+    	                }
+    	                series.forEach(function(value, j) {
+    											// Make the height of the bar based on the max y paased or 7 percent of the height.
+    											let barHeightBase = (that.yAxisLegend[0] !== null && that.yAxisLegend[0] !== undefined) ? parseInt(that.yAxisLegend[0]) : that.heightValue * .065;
+    											var barHeight = (that.heightValue * .80) * (value/barHeightBase);
+    	                    if (j == 0) {
+    	                      var x = xCoordinate;
+    	                    } else {
+    	                      var x = xCoordinate + widthPerSerie *j;
+    	                    }
+    	                    if (i == 0) {
+    	                      that._drawXLegend(x + 15, barWidth-5, xlabels[j]);
+    	                    }
+    	                    var y = ((that.heightValue * .9) - barHeight-1);
 
-                    that._drawBar(x, y, widhtForColumn-5, barHeight, color);
-                    that._drawValue(x + (widhtForColumn/2) - 10 , y, widhtForColumn-5, value);
-                });
-            });
-            var averageHeight = (that.heightValue * .80) * (this.average/100);
-            var yHeight = ((that.heightValue * .9) - averageHeight-1);
+    	                    that._drawSideBySideBar(x, y, barWidth-5, barHeight, color);
+    											that._drawValue(x + (barWidth/2) - 10 , y, barWidth-5, value);
+    	                });
+    	            });
 
+    							that._drawYAxis();
 
-            this.svg
-                .append("line")
-                .attr("class", "px-simple-bar-chart bar-chart-bottom-line")
-                .attr("x1", widhtForColumn)
-                .attr("y1", this.heightValue * .9)
-                .attr("x2", this.chartWidth + 40)
-                .attr("y2", this.heightValue * .9);
+    	            this.svg
+    	                .append("line")
+    	                .attr("class", "px-simple-bar-chart bar-chart-bottom-line")
+    	                .attr("x1", 40)
+    	                .attr("y1", this.heightValue * .9)
+    	                .attr("x2", this.chartWidth + 40)
+    	                .attr("y2", this.heightValue * .9);
 
-                this.svg
-                .append("line")
-                .attr("class", "px-simple-bar-chart bar-chart-bottom-line")
-                .attr("x1", 0)
-                .attr("y1", yHeight)
-                .attr("x2", this.chartWidth)
-                .attr("y2", yHeight)
-                .attr("stroke-dasharray", "20, 20");
+                  // Only display the bashed line and avearge value if provided.
+    							if(this.average !== null && this.average !== undefined) {
+    		            var averageHeight = (that.heightValue * .80) * (this.average/100);
+    		            var yHeight = ((that.heightValue * .9) - averageHeight-1);
+    		            this.svg
+    		                .append("line")
+    		                .attr("class", "px-simple-bar-chart bar-chart-bottom-line")
+    		                .attr("x1", 0)
+    		                .attr("y1", yHeight)
+    		                .attr("x2", this.chartWidth)
+    		                .attr("y2", yHeight)
+    		                .attr("stroke-dasharray", "20, 20");
 
-                this.svg
-                .append("text")
-                .attr("class", "x-axis")
-                .attr("x", this.chartWidth - 30)
-                .attr("y", yHeight - 15)
-                .attr("width", widhtForColumn- 10)
-                .text(this.average + '%');
+    		          	this.svg
+    		                .append("text")
+    		                .attr("class", "x-axis")
+    		                .attr("x", this.chartWidth - 30)
+    		                .attr("y", yHeight - 15)
+    		                .attr("width", barWidth- 10)
+    		                .text(this.average + '%');
+    							}
 
-                this.svg
-                .append("text")
-                .attr("class", "x-axis")
-                .attr("x", 0)
-                .attr("y", this.heightValue * .9)
-                .attr("width", widhtForColumn- 10)
-                .text('0');
+    						} else {
+    							this.chartData.forEach(function(series, i) {
+    	                var color = that._getColor(i);
+    	                series.forEach(function(value, j) {
+    	                    // for each series draw a bar representing each value
+    	                    var barHeight = Math.floor(that.yScale(value));
+    	                    var typeofElement = typeof offsets[j];
+    	                    var isFirst = typeofElement.toString() === 'undefined';
+    	                    offsets[j] = isFirst ? barHeight : offsets[j] + barHeight;
+    	                    var y = that.heightValue - offsets[j] - 1;
+    	                    var x = (that.gridWidth*2) * j;
+    	                    that._drawBar(x, y, that.gridWidth, barHeight, i, color);
 
-                this.svg
-                .append("text")
-                .attr("class", "x-axis")
-                .attr("x", 0)
-                .attr("y", this.heightValue * .82)
-                .attr("width", widhtForColumn- 10)
-                .text('10');
+    	                });
+    	            });
 
-                this.svg
-                .append("text")
-                .attr("class", "x-axis")
-                .attr("x", 0)
-                .attr("y", this.heightValue* .74)
-                .attr("width", widhtForColumn- 10)
-                .text('20');
+    							this.svg
+                    .append("line")
+                    .attr("class", "px-simple-bar-chart bar-chart-bottom-line")
+    								.attr("x1", 0)
+                    .attr("y1", this.heightValue)
+                    .attr("x2", this.chartWidth)
+    								.attr("y2", this.heightValue);
+    						}
+        },
 
-                this.svg
-                .append("text")
-                .attr("class", "x-axis")
-                .attr("x", 0)
-                .attr("y", this.heightValue* .66)
-                .attr("width", widhtForColumn- 10)
-                .text('30');
+        _drawYAxis: function() {
+					var that = this;
 
-                this.svg
-                .append("text")
-                .attr("class", "x-axis")
-                .attr("x", 0)
-                .attr("y", this.heightValue* .58)
-                .attr("width", widhtForColumn- 10)
-                .text('40');
+					let maxValue = parseInt(that.yAxisLegend[0]);
+					let minValue = parseInt(that.yAxisLegend[1]);
 
-                this.svg
-                .append("text")
-                .attr("class", "x-axis")
-                .attr("x", 0)
-                .attr("y", this.heightValue* .50)
-                .attr("width", widhtForColumn- 10)
-                .text('50');
+					var ninetyPercentVal = this.heightValue * .9;
+					var tenPercentVal = this.heightValue * .1;
+					var itemsNumber = maxValue/minValue;
+					var incrementValue = (ninetyPercentVal-tenPercentVal)/itemsNumber;
+					var currentYaxis = ninetyPercentVal;
+					for(var y=0; y<=maxValue; y+=minValue) {
+						this.svg
+							.append("text")
+							.attr("class", "x-axis")
+							.attr("x", 0)
+							.attr("y", currentYaxis)
+							.text(y);
 
-                this.svg
-                .append("text")
-                .attr("class", "x-axis")
-                .attr("x", 0)
-                .attr("y", this.heightValue* .42)
-                .attr("width", widhtForColumn- 10)
-                .text('60');
+						currentYaxis -= incrementValue;
+					}
 
-                this.svg
-                .append("text")
-                .attr("class", "x-axis")
-                .attr("x", 0)
-                .attr("y", this.heightValue* .34)
-                .attr("width", widhtForColumn- 10)
-                .text('70');
+				},
 
-                this.svg
-                .append("text")
-                .attr("class", "x-axis")
-                .attr("x", 0)
-                .attr("y", this.heightValue* .26)
-                .attr("width", widhtForColumn- 10)
-                .text('80');
-
-                this.svg
-                .append("text")
-                .attr("class", "x-axis")
-                .attr("x", 0)
-                .attr("y", this.heightValue* .18)
-                .attr("width", widhtForColumn)
-                .text('90');
+        _drawXLegend: function(x, width, value) {
+          this.svg
+                  .append("text")
+                  .attr("class", "x-legend")
+                  .attr("x", x)
+                  .attr("y", this.heightValue - 5)
+                  .attr("width", width)
+	                .attr("height", 50)
+                  .text(value);
         },
 
         _drawXaxis: function(x, width, value) {
@@ -642,7 +636,18 @@ The following theme would be incorrect because it has a gap. All series in your 
                   .text(value);
         },
 
-        _drawBar: function(x, y, width, height, color) {
+        _drawBar: function(x, y, width, height, i, color) {
+            this.svg
+                .append("rect")
+                .attr("class", "bar")
+                .attr("x", x)
+                .attr("y", y)
+                .attr("width", width)
+                .attr("height", height)
+                .attr("fill", color);
+        },
+
+				_drawSideBySideBar: function(x, y, width, height, color) {
             this.svg
                 .append("rect")
                 .attr("class", "bar")
