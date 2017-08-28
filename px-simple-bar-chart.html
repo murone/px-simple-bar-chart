@@ -507,7 +507,7 @@ The following theme would be incorrect because it has a gap. All series in your 
     	            let widthPerSerie = (this.widthValue - xOffsetLeft - xOffsetRight)/this.chartData[0].length;
     							// Set the width of the bar plus one more for spacing
     	            let barWidth = widthPerSerie/(this.chartData.length+1);
-    	            let xCoordinate = 40;
+    	            let xCoordinate = 40 + (barWidth/2);
     	            let xlabels = this.xAxisLabels;
     	            this.chartData.forEach(function(series, i) {
     	                var color = that._getColor(i);
