@@ -505,7 +505,7 @@ The following theme would be incorrect because it has a gap. All series in your 
     	            let xOffsetRight = 40
     							// Divide the x axis drawable area by the number of series to be drawn
     	            let widthPerSerie = (this.widthValue - xOffsetLeft - xOffsetRight)/this.chartData[0].length;
-    							// Set the width of the bar plus one more the spacing
+    							// Set the width of the bar plus one more for spacing
     	            let barWidth = widthPerSerie/(this.chartData.length+1);
     	            let xCoordinate = 40;
     	            let xlabels = this.xAxisLabels;
@@ -514,18 +514,13 @@ The following theme would be incorrect because it has a gap. All series in your 
     	                if (i != 0) {
     	                  xCoordinate += barWidth
     	                }
+									    let newSerie = true;
     	                series.forEach(function(value, j) {
     											// Make the height of the bar based on the max y paased or 7 percent of the height.
     											let barHeightBase = (that.yAxisLegend[0] !== null && that.yAxisLegend[0] !== undefined) ? parseInt(that.yAxisLegend[0]) : that.heightValue * .065;
     											var barHeight = (that.heightValue * .80) * (value/barHeightBase);
-    	                    if (j == 0) {
-    	                      var x = xCoordinate;
-    	                    } else {
-    	                      var x = xCoordinate + widthPerSerie *j;
-    	                    }
-    	                    if (i == 0) {
-    	                      that._drawXLegend(x + 15, barWidth-5, xlabels[j]);
-    	                    }
+											    x = newSerie ? xCoordinate : xCoordinate + widthPerSerie * j;
+											    newSerie = false;
     	                    var y = ((that.heightValue * .9) - barHeight-1);
 
     	                    that._drawSideBySideBar(x, y, barWidth-5, barHeight, color);
@@ -533,14 +528,22 @@ The following theme would be incorrect because it has a gap. All series in your 
     	                });
     	            });
 
-    							that._drawYAxis();
+
+
+    							// Only display/draw x and y legends if provided.
+    							if(this.yAxisLegend != undefined && this.yAxisLegend.length>0) {
+    								that._drawYAxis();
+    							}
+    							if(this.xAxisLabels != undefined && this.xAxisLabels.length>0) {
+    								that._drawXAxisLabels(barWidth, widthPerSerie);
+    							}
 
     	            this.svg
     	                .append("line")
     	                .attr("class", "px-simple-bar-chart bar-chart-bottom-line")
     	                .attr("x1", 40)
     	                .attr("y1", this.heightValue * .9)
-    	                .attr("x2", this.chartWidth + 40)
+    	                .attr("x2", this.chartWidth - 20)
     	                .attr("y2", this.heightValue * .9);
 
                   // Only display the bashed line and avearge value if provided.
@@ -615,25 +618,21 @@ The following theme would be incorrect because it has a gap. All series in your 
 
 				},
 
-        _drawXLegend: function(x, width, value) {
-          this.svg
-                  .append("text")
-                  .attr("class", "x-legend")
-                  .attr("x", x)
-                  .attr("y", this.heightValue - 5)
-                  .attr("width", width)
-	                .attr("height", 50)
-                  .text(value);
-        },
+        _drawXAxisLabels: function(barWidth, widthPerSerie) {
+					var xCoordinatex;
+					let xlabels = this.xAxisLabels;
+					for(var j=0; j<xlabels.length; j++) {
+						xCoordinate = j==0 ? 40 + (barWidth/2) : (xCoordinate + widthPerSerie);
+	          this.svg
+                .append("text")
+                .attr("class", "x-axis")
+                .attr("x", xCoordinate + 15)
+                .attr("y", this.heightValue - 5)
+                .attr("width", barWidth-5)
+                .attr("height", 50)
+                .text(xlabels[j]);
+					};
 
-        _drawXaxis: function(x, width, value) {
-          this.svg
-                  .append("text")
-                  .attr("class", "x-axis")
-                  .attr("x", x)
-                  .attr("y", this.heightValue - 5)
-                  .attr("width", width)
-                  .text(value);
         },
 
         _drawBar: function(x, y, width, height, i, color) {
