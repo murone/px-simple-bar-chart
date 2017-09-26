@@ -148,11 +148,21 @@ The following theme would be incorrect because it has a gap. All series in your 
               }
             },
 
+            yAxisLabels: {
+              type: Array,
+              value: []
+            },
+
             average: {
               type: String
             },
 
             sidebyside: {
+              type: Boolean,
+              value: false
+            },
+
+            horizontal: {
               type: Boolean,
               value: false
             },
@@ -497,101 +507,140 @@ The following theme would be incorrect because it has a gap. All series in your 
             return (dryRun) ? cumulativePromise : '';
         },
         _drawBars: function() {
-            var offsets = [], // accumulate y for each value stack
+          var offsets = [], // accumulate y for each value stack
                 that = this;
 
-    						if(this.sidebyside) {
-    	            let xOffsetLeft = 20
-    	            let xOffsetRight = 40
-    							// Divide the x axis drawable area by the number of series to be drawn
-    	            let widthPerSerie = (this.widthValue - xOffsetLeft - xOffsetRight)/this.chartData[0].length;
-    							// Set the width of the bar plus one more for spacing
-    	            let barWidth = widthPerSerie/(this.chartData.length+1);
-    	            let xCoordinate = 40 + (barWidth/2);
-    	            let xlabels = this.xAxisLabels;
-    	            this.chartData.forEach(function(series, i) {
-    	                var color = that._getColor(i);
-    	                if (i != 0) {
-    	                  xCoordinate += barWidth
-    	                }
-									    let newSerie = true;
-    	                series.forEach(function(value, j) {
-    											// Make the height of the bar based on the max y paased or 7 percent of the height.
-    											let barHeightBase = (that.yAxisLegend[0] !== null && that.yAxisLegend[0] !== undefined) ? parseInt(that.yAxisLegend[0]) : that.heightValue * .065;
-    											var barHeight = (that.heightValue * .80) * (value/barHeightBase);
-											    x = newSerie ? xCoordinate : xCoordinate + widthPerSerie * j;
-											    newSerie = false;
-    	                    var y = ((that.heightValue * .9) - barHeight-1);
+          if(this.sidebyside) {
 
-    	                    that._drawSideBySideBar(x, y, barWidth-5, barHeight, color);
-    											that._drawValue(x + (barWidth/2) - 10 , y, barWidth-5, value);
-    	                });
-    	            });
+              let xOffsetLeft = 20
+              let xOffsetRight = 40
+  						// Divide the x axis drawable area by the number of series to be drawn
+              let widthPerSerie = (this.widthValue - xOffsetLeft - xOffsetRight)/this.chartData[0].length;
+  						// Set the width of the bar plus one more for spacing
+              let barWidth = widthPerSerie/(this.chartData.length+1);
+              let xCoordinate = 40 + (barWidth/2);
+              let xlabels = this.xAxisLabels;
+              this.chartData.forEach(function(series, i) {
+                  var color = that._getColor(i);
+                  if (i != 0) {
+                    xCoordinate += barWidth
+                  }
+  						    let newSerie = true;
+                  series.forEach(function(value, j) {
+  										// Make the height of the bar based on the max y paased or 7 percent of the height.
+  										let barHeightBase = (that.yAxisLegend[0] !== null && that.yAxisLegend[0] !== undefined) ? parseInt(that.yAxisLegend[0]) : that.heightValue * .065;
+  										var barHeight = (that.heightValue * .80) * (value/barHeightBase);
+  								    x = newSerie ? xCoordinate : xCoordinate + widthPerSerie * j;
+  								    newSerie = false;
+                      var y = ((that.heightValue * .9) - barHeight-1);
 
+                      that._drawSideBySideBar(x, y, barWidth-5, barHeight, color);
+  										that._drawValue(x + (barWidth/2) - 10 , y, barWidth-5, value);
+                  });
+              });
 
+							// Only display/draw x and y legends if provided.
+							if(this.yAxisLegend != undefined && this.yAxisLegend.length>0) {
+								that._drawYAxis();
+							}
+							if(this.xAxisLabels != undefined && this.xAxisLabels.length>0) {
+								that._drawXAxisLabels(barWidth, widthPerSerie);
+							}
 
-    							// Only display/draw x and y legends if provided.
-    							if(this.yAxisLegend != undefined && this.yAxisLegend.length>0) {
-    								that._drawYAxis();
-    							}
-    							if(this.xAxisLabels != undefined && this.xAxisLabels.length>0) {
-    								that._drawXAxisLabels(barWidth, widthPerSerie);
-    							}
+	            this.svg
+	                .append("line")
+	                .attr("class", "px-simple-bar-chart bar-chart-bottom-line")
+	                .attr("x1", 40)
+	                .attr("y1", this.heightValue * .9)
+	                .attr("x2", this.chartWidth - 20)
+	                .attr("y2", this.heightValue * .9);
 
-    	            this.svg
-    	                .append("line")
-    	                .attr("class", "px-simple-bar-chart bar-chart-bottom-line")
-    	                .attr("x1", 40)
-    	                .attr("y1", this.heightValue * .9)
-    	                .attr("x2", this.chartWidth - 20)
-    	                .attr("y2", this.heightValue * .9);
+              // Only display the bashed line and avearge value if provided.
+							if(this.average !== null && this.average !== undefined) {
+		            var averageHeight = (that.heightValue * .80) * (this.average/100);
+		            var yHeight = ((that.heightValue * .9) - averageHeight-1);
+		            this.svg
+		                .append("line")
+		                .attr("class", "px-simple-bar-chart bar-chart-bottom-line")
+		                .attr("x1", 0)
+		                .attr("y1", yHeight)
+		                .attr("x2", this.chartWidth)
+		                .attr("y2", yHeight)
+		                .attr("stroke-dasharray", "20, 20");
 
-                  // Only display the bashed line and avearge value if provided.
-    							if(this.average !== null && this.average !== undefined) {
-    		            var averageHeight = (that.heightValue * .80) * (this.average/100);
-    		            var yHeight = ((that.heightValue * .9) - averageHeight-1);
-    		            this.svg
-    		                .append("line")
-    		                .attr("class", "px-simple-bar-chart bar-chart-bottom-line")
-    		                .attr("x1", 0)
-    		                .attr("y1", yHeight)
-    		                .attr("x2", this.chartWidth)
-    		                .attr("y2", yHeight)
-    		                .attr("stroke-dasharray", "20, 20");
+		          	this.svg
+		                .append("text")
+		                .attr("class", "x-axis")
+		                .attr("x", this.chartWidth - 30)
+		                .attr("y", yHeight - 15)
+		                .attr("width", barWidth- 10)
+		                .text(this.average + '%');
+							}
 
-    		          	this.svg
-    		                .append("text")
-    		                .attr("class", "x-axis")
-    		                .attr("x", this.chartWidth - 30)
-    		                .attr("y", yHeight - 15)
-    		                .attr("width", barWidth- 10)
-    		                .text(this.average + '%');
-    							}
+						} else if(this.horizontal) {
+                let xCoordinate = 80;
+								let getXCoordonate = function (xCoord, value, percentValue) {
+									if (value <= 7) {
+										return xCoord + 2;
+									} else if(value > 7 && value <= 9) {
+										return xCoord + 10;
+									} else {
+										return xCoord + ((percentValue/2)-15);
+									}
+								};
+								this.chartData.forEach(function(series, i) {
+		                var color = that._getColor(i);
+                    /***
+                    * Note that since we are drawing 3 shift, the shift y is 7%,
+                    * shift2 at 44% and shift3 at 82% of the height. In addition
+                    * they all have a fixed graph height of 55.
+                    */
+										let yIncrement = 0.07;
+										series.forEach(function(value, j) {
+                        // accumulate x for each value stack
+												offsets[j] = i==0 ? 0 : offsets[j] + that.chartData[i-1][j];
+												let percentOffsets = (that.chartWidth * .8) * (offsets[j]/100);
+                        let x = i==0 ? xCoordinate : xCoordinate + percentOffsets;
+                        // Adjust the y based on the shift
+												let yIncrementVal = parseFloat(yIncrement.toFixed(2));
+		                    let y = (that.heightValue * yIncrementVal);
+												let percentValue = (that.chartWidth * .8) * (value/100);
+		                    that._drawHorizontalBar(x, y, percentValue, 55, color);
+												// Display percentage only if it is greater than 5
+												if(value >= 5) {
+                          // Adjust x and y corrdonates accordingly.
+													let valX = getXCoordonate(x, value, percentValue);
+													let valY = y+30;
+													that._drawPercentageValue(valX , valY, value);
+												}
+												yIncrement += 0.375;
+		                });
+		            });
+								this._drawYAxisLabels();
+            } else {
+  							this.chartData.forEach(function(series, i) {
+  	                var color = that._getColor(i);
+  	                series.forEach(function(value, j) {
+  	                    // for each series draw a bar representing each value
+  	                    var barHeight = Math.floor(that.yScale(value));
+  	                    var typeofElement = typeof offsets[j];
+  	                    var isFirst = typeofElement.toString() === 'undefined';
+  	                    offsets[j] = isFirst ? barHeight : offsets[j] + barHeight;
+  	                    var y = that.heightValue - offsets[j] - 1;
+  	                    var x = (that.gridWidth*2) * j;
+  	                    that._drawBar(x, y, that.gridWidth, barHeight, i, color);
 
-    						} else {
-    							this.chartData.forEach(function(series, i) {
-    	                var color = that._getColor(i);
-    	                series.forEach(function(value, j) {
-    	                    // for each series draw a bar representing each value
-    	                    var barHeight = Math.floor(that.yScale(value));
-    	                    var typeofElement = typeof offsets[j];
-    	                    var isFirst = typeofElement.toString() === 'undefined';
-    	                    offsets[j] = isFirst ? barHeight : offsets[j] + barHeight;
-    	                    var y = that.heightValue - offsets[j] - 1;
-    	                    var x = (that.gridWidth*2) * j;
-    	                    that._drawBar(x, y, that.gridWidth, barHeight, i, color);
+  	                });
+  	            });
 
-    	                });
-    	            });
-
-    							this.svg
-                    .append("line")
-                    .attr("class", "px-simple-bar-chart bar-chart-bottom-line")
-    								.attr("x1", 0)
-                    .attr("y1", this.heightValue)
-                    .attr("x2", this.chartWidth)
-    								.attr("y2", this.heightValue);
-    						}
+  							this.svg
+                  .append("line")
+                  .attr("class", "px-simple-bar-chart bar-chart-bottom-line")
+  								.attr("x1", 0)
+                  .attr("y1", this.heightValue)
+                  .attr("x2", this.chartWidth)
+  								.attr("y2", this.heightValue);
+  					}
         },
 
         _drawYAxis: function() {
@@ -617,6 +666,35 @@ The following theme would be incorrect because it has a gap. All series in your 
 					}
 
 				},
+
+				_drawYAxisLabels: function() {
+
+					let ninetyPercentVal = this.heightValue * .9;
+ 					let midPercentVal = this.heightValue * .53;
+ 					let tenPercentVal = this.heightValue * .15;
+
+					this.svg
+						.append("text")
+						.attr("class", "x-axis")
+						.attr("x", 0)
+						.attr("y", ninetyPercentVal)
+						.text(this.yAxisLabels[2]);
+
+					this.svg
+						.append("text")
+						.attr("class", "x-axis")
+						.attr("x", 0)
+						.attr("y", midPercentVal)
+						.text(this.yAxisLabels[1]);
+
+					this.svg
+						.append("text")
+						.attr("class", "x-axis")
+						.attr("x", 0)
+						.attr("y", tenPercentVal)
+						.text(this.yAxisLabels[0]);
+
+ 				},
 
         _drawXAxisLabels: function(barWidth, widthPerSerie) {
 					var self = this;
@@ -706,6 +784,26 @@ The following theme would be incorrect because it has a gap. All series in your 
             .attr("y", y - 5)
             .attr("width", width)
             .text(Math.floor(value)+ '  ');
+        },
+
+				_drawHorizontalBar: function(x, y, width, height, color) {
+						this.svg
+								.append("rect")
+								.attr("class", "bar")
+								.attr("x", x)
+								.attr("y", y)
+								.attr("width", width)
+								.attr("height", height)
+                .attr("fill", color);
+        },
+
+        _drawPercentageValue: function(x, y, value) {
+          this.svg
+            .append("text")
+            .attr("class", "x-axis")
+            .attr("x", x)
+            .attr("y", y)
+            .text(value + '%');
         }
 
     });
