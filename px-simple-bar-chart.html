@@ -570,7 +570,7 @@ The following theme would be incorrect because it has a gap. All series in your 
 
 		          	this.svg
 		                .append("text")
-		                .attr("class", "x-axis")
+		                .attr("class", "axis")
 		                .attr("x", this.chartWidth - 30)
 		                .attr("y", yHeight - 15)
 		                .attr("width", barWidth- 10)
@@ -657,7 +657,7 @@ The following theme would be incorrect because it has a gap. All series in your 
 					for(var y=0; y<=maxValue; y+=minValue) {
 						this.svg
 							.append("text")
-							.attr("class", "x-axis")
+							.attr("class", "axis")
 							.attr("x", 0)
 							.attr("y", currentYaxis)
 							.text(y);
@@ -675,21 +675,21 @@ The following theme would be incorrect because it has a gap. All series in your 
 
 					this.svg
 						.append("text")
-						.attr("class", "x-axis")
+						.attr("class", "axis")
 						.attr("x", 0)
 						.attr("y", ninetyPercentVal)
 						.text(this.yAxisLabels[2]);
 
 					this.svg
 						.append("text")
-						.attr("class", "x-axis")
+						.attr("class", "axis")
 						.attr("x", 0)
 						.attr("y", midPercentVal)
 						.text(this.yAxisLabels[1]);
 
 					this.svg
 						.append("text")
-						.attr("class", "x-axis")
+						.attr("class", "axis")
 						.attr("x", 0)
 						.attr("y", tenPercentVal)
 						.text(this.yAxisLabels[0]);
@@ -713,7 +713,7 @@ The following theme would be incorrect because it has a gap. All series in your 
 							this.svg
 									.append("text")
 									.attr("id", label)
-			            .attr("class", "x-axis")
+			            .attr("class", "axis")
 	                .attr("x", xCoord + 15)
 	                .attr("y", this.heightValue - 5)
 	                .attr("width", barWidth-5)
@@ -728,7 +728,7 @@ The following theme would be incorrect because it has a gap. All series in your 
 										.append("text")
 										.attr("id", labelMap.get(label))
 										.attr("font-weight", "bold")
-										.attr("font-size", "1.1em")
+										.attr("font-size", "1em")
 		                .attr("x", newX-15)
 		                .attr("y", newY-17)
 		                .attr("width", barWidth-5)
@@ -743,7 +743,7 @@ The following theme would be incorrect because it has a gap. All series in your 
 						} else {
 							this.svg
 	                .append("text")
-			            .attr("class", "x-axis")
+			            .attr("class", "axis")
 	                .attr("x", xCoord + 15)
 	                .attr("y", this.heightValue - 5)
 	                .attr("width", barWidth-5)
@@ -800,7 +800,7 @@ The following theme would be incorrect because it has a gap. All series in your 
         _drawPercentageValue: function(x, y, value) {
           this.svg
             .append("text")
-            .attr("class", "x-axis")
+            .attr("class", "horizontal-percent-value")
             .attr("x", x)
             .attr("y", y)
             .text(value + '%');
