@@ -425,6 +425,10 @@ The following theme would be incorrect because it has a gap. All series in your 
         },
 
         _setScales: function() {
+            // Adjust the chartHeight to make space for x axis labels.
+            if(this.xAxisLabels != undefined && this.xAxisLabels.length>0) {
+              this.chartHeight -= 10;
+            }
             // no xscale necessary
             this.yScale = d3.scale
                 .linear()
@@ -544,7 +548,7 @@ The following theme would be incorrect because it has a gap. All series in your 
 								that._drawYAxis();
 							}
 							if(this.xAxisLabels != undefined && this.xAxisLabels.length>0) {
-								that._drawXAxisLabels(barWidth, widthPerSerie);
+								that._drawXAxisLabels(barWidth, widthPerSerie, true);
 							}
 
 	            this.svg
@@ -618,6 +622,16 @@ The following theme would be incorrect because it has a gap. All series in your 
 		            });
 								this._drawYAxisLabels();
             } else {
+
+                /*** For the default graph
+                * If the labels on the x axis need be drwan, we adjust the heightValue
+                * to reflect the new adding.
+                */
+  							if(this.xAxisLabels != undefined && this.xAxisLabels.length>0) {
+  								that._drawXAxisLabels(barWidth, that.gridWidth*2, false);
+                  this.heightValue = that.heightValue - 15;
+  							}
+
   							this.chartData.forEach(function(series, i) {
   	                var color = that._getColor(i);
   	                series.forEach(function(value, j) {
@@ -700,16 +714,17 @@ The following theme would be incorrect because it has a gap. All series in your 
 					var self = this;
 					let xCoord;
 					let xlabels = this.xAxisLabels;
+          let offSetValue = addOffSet ? 40 : 0;
           // Map to hold truncated to full description
 					var labelMap = new Map();
 					for(var j=0; j<xlabels.length; j++) {
-						xCoord = j==0 ? 40 + (barWidth/2) : (xCoord + widthPerSerie);
+						xCoord = j==0 ? offSetValue + (barWidth/2) : (xCoord + widthPerSerie);
             /**
             * When description is too long, truncated the text and only show full
             * text when hover over and hide/remove the full desciption otherwise
             */
             if(xlabels[j].length > 15) {
-							let label = xlabels[j].substring(0, 15) + "...";
+							let label = xlabels[j].substring(0, 10) + "...";
 							this.svg
 									.append("text")
 									.attr("id", label)
@@ -745,7 +760,7 @@ The following theme would be incorrect because it has a gap. All series in your 
 	                .append("text")
 			            .attr("class", "axis")
 	                .attr("x", xCoord + 15)
-	                .attr("y", this.heightValue - 5)
+	                .attr("y", this.heightValue)
 	                .attr("width", barWidth-5)
 	                .attr("height", 50)
 	                .text(xlabels[j]);
