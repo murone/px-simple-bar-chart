@@ -426,15 +426,15 @@ The following theme would be incorrect because it has a gap. All series in your 
 
         _setScales: function() {
             // Adjust the chartHeight to make space for x axis labels.
-            if((this.xAxisLabels != undefined && this.xAxisLabels.length>0) &&
-              this.yAxisLegend == undefined) {
-              this.chartHeight -= 10;
-            }
+            // if((this.xAxisLabels != undefined && this.xAxisLabels.length>0) &&
+            //   this.yAxisLegend == undefined) {
+            //   this.chartHeight -= 10;
+            // }
             // no xscale necessary
             this.yScale = d3.scale
                 .linear()
                 .domain([0, this._getMax()])
-                .range([0, this.chartHeight]);
+                .range([0, this.chartHeight - 10]);
         },
 
         _getLegendHeightPromise: function() {
@@ -515,14 +515,15 @@ The following theme would be incorrect because it has a gap. All series in your 
           var offsets = [], // accumulate y for each value stack
                 that = this;
 
+          let xOffsetLeft = 20
+          let xOffsetRight = 40
+          // Divide the x axis drawable area by the number of series to be drawn
+          let widthPerSerie = (this.widthValue - xOffsetLeft - xOffsetRight)/this.chartData[0].length;
+          // Set the width of the bar plus one more for spacing
+          let barWidth = widthPerSerie/(this.chartData.length+1);
+
           if(this.sidebyside) {
 
-              let xOffsetLeft = 20
-              let xOffsetRight = 40
-  						// Divide the x axis drawable area by the number of series to be drawn
-              let widthPerSerie = (this.widthValue - xOffsetLeft - xOffsetRight)/this.chartData[0].length;
-  						// Set the width of the bar plus one more for spacing
-              let barWidth = widthPerSerie/(this.chartData.length+1);
               let xCoordinate = 40 + (barWidth/2);
               let xlabels = this.xAxisLabels;
               this.chartData.forEach(function(series, i) {
@@ -711,7 +712,7 @@ The following theme would be incorrect because it has a gap. All series in your 
 
  				},
 
-        _drawXAxisLabels: function(barWidth, widthPerSerie) {
+        _drawXAxisLabels: function(barWidth, widthPerSerie, addOffSet) {
 					var self = this;
 					let xCoord;
 					let xlabels = this.xAxisLabels;
@@ -731,7 +732,7 @@ The following theme would be incorrect because it has a gap. All series in your 
 									.attr("id", label)
 			            .attr("class", "axis")
 	                .attr("x", xCoord + 15)
-	                .attr("y", this.heightValue - 5)
+	                .attr("y", this.heightValue)
 	                .attr("width", barWidth-5)
 	                .attr("height", 50)
 									.text(label);
