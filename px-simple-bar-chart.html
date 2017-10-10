@@ -547,7 +547,7 @@ The following theme would be incorrect because it has a gap. All series in your 
 
 							// Only display/draw x and y legends if provided.
 							if(this.yAxisLegend != undefined && this.yAxisLegend.length>0) {
-								that._drawYAxis();
+								that._drawYAxis(false);
 							}
 							if(this.xAxisLabels != undefined && this.xAxisLabels.length>0) {
 								that._drawXAxisLabels(barWidth, widthPerSerie, true);
@@ -624,16 +624,21 @@ The following theme would be incorrect because it has a gap. All series in your 
 		            });
 								this._drawYAxisLabels();
             } else {
-
+                this.gridWidth = that.gridWidth - 5;
                 /*** For the default graph
                 * If the labels on the x axis need be drwan, we adjust the heightValue
                 * to reflect the new adding.
                 */
   							if(this.xAxisLabels != undefined && this.xAxisLabels.length>0) {
-  								that._drawXAxisLabels(barWidth, that.gridWidth*2, false);
+  								that._drawXAxisLabels(barWidth + 40, that.gridWidth*2, false);
                   this.heightValue = that.heightValue - 15;
   							}
+                //Only display/draw x and y legends if provided.
+  							if(this.yAxisLegend != undefined && this.yAxisLegend.length>0) {
+  								that._drawYAxis(true);
+  							}
 
+                let lastestBarHeight = [0, 0, 0, 0, 0, 0, 0];
   							this.chartData.forEach(function(series, i) {
   	                var color = that._getColor(i);
   	                series.forEach(function(value, j) {
@@ -643,29 +648,40 @@ The following theme would be incorrect because it has a gap. All series in your 
   	                    var isFirst = typeofElement.toString() === 'undefined';
   	                    offsets[j] = isFirst ? barHeight : offsets[j] + barHeight;
   	                    var y = that.heightValue - offsets[j] - 1;
-  	                    var x = (that.gridWidth*2) * j;
+  	                    var x = (that.gridWidth*2) * j + 40;
   	                    that._drawBar(x, y, that.gridWidth, barHeight, i, color);
+                        lastestBarHeight[j] = y;
 
   	                });
   	            });
 
+                //Only display/draw values if provided.
+  							if(this.barTotalValues != undefined && this.barTotalValues.length>0) {
+                  this.barTotalValues.forEach(function(value, i) {
+                    if(i==0) {
+                      that._drawValue(75 , lastestBarHeight[0], 30, that.barTotalValues[0]);
+                    }
+                    that._drawValue(75 + (that.gridWidth*2) * i, lastestBarHeight[i], 30, that.barTotalValues[i]);
+                  });
+  							}
+
   							this.svg
                   .append("line")
                   .attr("class", "px-simple-bar-chart bar-chart-bottom-line")
-  								.attr("x1", 0)
+  								.attr("x1", 40)
                   .attr("y1", this.heightValue)
-                  .attr("x2", this.chartWidth)
+                  .attr("x2", this.chartWidth - 25)
   								.attr("y2", this.heightValue);
   					}
         },
 
-        _drawYAxis: function() {
+        _drawYAxis: function(useFullHeight) {
 					var that = this;
 
 					let maxValue = parseInt(that.yAxisLegend[0]);
 					let minValue = parseInt(that.yAxisLegend[1]);
 
-					var ninetyPercentVal = this.heightValue * .9;
+					var ninetyPercentVal = useFullHeight ? this.heightValue : this.heightValue * .9 ;
 					var tenPercentVal = this.heightValue * .1;
 					var itemsNumber = maxValue/minValue;
 					var incrementValue = (ninetyPercentVal-tenPercentVal)/itemsNumber;
@@ -716,7 +732,11 @@ The following theme would be incorrect because it has a gap. All series in your 
 					var self = this;
 					let xCoord;
 					let xlabels = this.xAxisLabels;
-          let offSetValue = addOffSet ? 40 : 0;
+          let offSetValue = addOffSet ? 40 : 20;
+          let yCoord = addOffSet ? this.heightValue - 8 : this.heightValue;
+          let xDecal = widthPerSerie<70 ? 0 : 5;
+          xDecal = widthPerSerie<100 ? xDecal : 10;
+          xDecal = widthPerSerie>120 ? 15 : 10;
           // Map to hold truncated to full description
 					var labelMap = new Map();
 					for(var j=0; j<xlabels.length; j++) {
@@ -731,8 +751,8 @@ The following theme would be incorrect because it has a gap. All series in your 
 									.append("text")
 									.attr("id", label)
 			            .attr("class", "axis")
-	                .attr("x", xCoord + 15)
-	                .attr("y", this.heightValue)
+	                .attr("x", xCoord + xDecal)
+	                .attr("y", yCoord)
 	                .attr("width", barWidth-5)
 	                .attr("height", 50)
 									.text(label);
@@ -761,8 +781,8 @@ The following theme would be incorrect because it has a gap. All series in your 
 							this.svg
 	                .append("text")
 			            .attr("class", "axis")
-	                .attr("x", xCoord + 15)
-	                .attr("y", this.heightValue)
+	                .attr("x", xCoord + xDecal)
+	                .attr("y", yCoord)
 	                .attr("width", barWidth-5)
 	                .attr("height", 50)
 	                .text(xlabels[j]);
